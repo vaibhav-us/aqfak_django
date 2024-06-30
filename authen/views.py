@@ -7,7 +7,7 @@ from .serializers import CustomUserSerializer,CropSerializer,CropSensorDataSeria
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth import login,logout,authenticate
 from .utility import capitalizeDict
-
+from django.shortcuts import get_object_or_404
 
 
 
@@ -67,8 +67,13 @@ def getuser_crops(request):
     cropData = []
     for crop in cropSerializer.data:
         cropInstance = Crop.objects.get(id=crop['id'])  # Get Crop instance by ID
-        sensorDataInstance = CropSensorData.objects.get(crop=cropInstance)
-        condition = CropSensorDataSerializer(sensorDataInstance, many=False).data['condition']
+        sensor_data_instance = CropSensorData.objects.filter(crop=cropInstance).first()
+        if sensor_data_instance:
+            condition = CropSensorDataSerializer(sensor_data_instance).data['condition']
+        else:
+    # Handle the case where no data is found
+            condition = None
+
         crop['condition'] = condition
         
         cropData.append(capitalizeDict(crop))
