@@ -89,22 +89,28 @@ def getcrop_schedule(request) :
 
     #getting instances
     cropInstance = Crop.objects.get(user=custom_user,name=crop )
-    sensorDataInstance = CropSensorData.objects.get(crop=cropInstance)
-    scheduleInstances = CropSchedule.objects.filter(crop = cropInstance)
+    sensorData = {}
+    try:
+        sensorDataInstance = CropSensorData.objects.get(crop=cropInstance)
+        sensorData = CropSensorDataSerializer(sensorDataInstance, many=False).data
+        sensorData['npk'] = [                  
+            sensorData.pop('nitrogen'),
+            sensorData.pop('phosphorous'),
+            sensorData.pop('potassium'),
+        ]
+        sensorData['id'] = sensorData.pop('crop') #replacing the primary key of sensor data with its foreign key crop.As they are onetoone relation, it shouldnt be a problem    
+
+    except CropSensorData.DoesNotExist:
+        sensorData = {}
+     
     
     #getting data from instances
     crop = CropSerializer(cropInstance, many=False).data
-    sensorData = CropSensorDataSerializer(sensorDataInstance, many=False).data
-    schedule = CropScheduleSerializer(scheduleInstances, many=True).data 
+    scheduleInstances = CropSchedule.objects.filter(crop = cropInstance)
+    schedule = CropScheduleSerializer(scheduleInstances, many=True).data if scheduleInstances else []
 
     #merging separte columns of nitrogen ,phosphorous and potassium together
-    sensorData['npk'] = [                  
-        sensorData.pop('nitrogen'),
-        sensorData.pop('phosphorous'),
-        sensorData.pop('potassium'),
-    ]
-    sensorData['id'] = sensorData.pop('crop') #replacing the primary key of sensor data with its foreign key crop.As they are onetoone relation, it shouldnt be a problem    
-    
+       
     #putting everything together
     crop.update(sensorData)
     crop = capitalizeDict(crop)
