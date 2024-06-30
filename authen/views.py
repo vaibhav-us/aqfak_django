@@ -13,13 +13,15 @@ from .utility import capitalizeDict
 
 @api_view(['POST'])
 def signup(request):
-    user_data = request.data
-    user = User.objects.create(username=user_data["user_name"])
+    user_info = request.data['userInfo']
+    crops = request.data['crops']
+    user = User.objects.create(username=user_info["userId"])
     user.save()
-    customuser = CustomUser.objects.create(user= user , profilePhoto=user_data["profile_pic"])
+    customuser = CustomUser.objects.create(user= user , profilePhoto=user_info["profile_pic"])
     customuser.save()
-    crops = Crop.objects.create(name=user_data['crop_name'],stage=user_data['crop_stage'],area=user_data['crop_area'])
-    crops.save()
+    for crop in crops:
+        crop_record = Crop.objects.create(name=crop['crop'],stage=crop['stage'],area=crop['area'])
+        crop_record.save()
     return Response("data created")
 
 
