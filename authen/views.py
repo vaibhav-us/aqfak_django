@@ -11,7 +11,7 @@ from .utility import capitalizeDict
 
 
 
-    
+@api_view(['POST'])
 def signup(request):
     user_data = request.data
     user = User.objects.create(username=user_data["user_name"])
@@ -20,7 +20,7 @@ def signup(request):
     customuser.save()
     crops = Crop.objects.create(name=user_data['crop_name'],stage=user_data['crop_stage'],area=user_data['crop_area'])
     crops.save()
-    return user
+    return Response("data created")
 
 
 
