@@ -57,28 +57,55 @@ def get_user_details(request):
     return Response({"user":user_serializer.data,"crops":crop_serializer.data})
 
 ##new views
-@api_view(['GET'])
+@api_view(['GET','PUT','DELETE'])
 @permission_classes([IsAuthenticated])
 def getuser_crops(request):
     custom_user = CustomUser.objects.get(user=request.user)
-
-    crops = Crop.objects.filter(user=custom_user)
-    cropSerializer = CropSerializer(crops, many=True)
-    cropData = []
-    for crop in cropSerializer.data:
-        cropInstance = Crop.objects.get(id=crop['id'])  # Get Crop instance by ID
-        sensor_data_instance = CropSensorData.objects.filter(crop=cropInstance).first()
-        if sensor_data_instance:
-            condition = CropSensorDataSerializer(sensor_data_instance).data['condition']
-        else:
+    if request.method == "GET":
+        crops = Crop.objects.filter(user=custom_user)
+        cropSerializer = CropSerializer(crops, many=True)
+        cropData = []
+        for crop in cropSerializer.data:
+            cropInstance = Crop.objects.get(id=crop['id'])  # Get Crop instance by ID
+            sensor_data_instance = CropSensorData.objects.filter(crop=cropInstance).first()
+            if sensor_data_instance:
+                condition = CropSensorDataSerializer(sensor_data_instance).data['condition']
+            else:
     # Handle the case where no data is found
-            condition = None
+                condition = None
 
-        crop['condition'] = condition
+            crop['condition'] = condition
         
-        cropData.append(capitalizeDict(crop))
+            cropData.append(capitalizeDict(crop))
+        return Response(cropData)
+    elif request.method =="PUT":
+        crop_id = request.data['id']
+        try:
+            crop = Crop.objects.get(id=crop_id)
+        except Crop.DoesNotExist:
+            return Response({"error": "crop not found."})
+        data = request.data
+        crop_serializer = CropSerializer(crop,data=data,partial=True)
+        if crop_serializer.is_valid():
+            crop_serializer.save()
+            return Response(crop_serializer.data)
+        else:
+            return Response("error")
     
-    return Response(cropData)
+    elif request.method =="DELETE":
+        crop_id = request.data['id']
+        try:
+            crop = Crop.objects.get(id=crop_id)
+        except Crop.DoesNotExist:
+            return Response({"error": "crop not found."})
+        if crop:
+            crop.delete()
+            return Response('deleted')
+        
+
+
+
+
 
 
 @api_view(['GET'])
