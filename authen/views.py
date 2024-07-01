@@ -84,7 +84,11 @@ def getuser_crops(request):
             crop = Crop.objects.get(id=crop_id)
         except Crop.DoesNotExist:
             return Response({"error": "crop not found."})
-        data = request.data
+        data = {
+            "crop":request.data['crop'],
+            "area":request.data['area'],
+            "stage":request.data['stage'],  
+        }
         crop_serializer = CropSerializer(crop,data=data,partial=True)
         if crop_serializer.is_valid():
             crop_serializer.save()
