@@ -115,7 +115,7 @@ def getuser_crops(request):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def getcrop_schedule(request) :
+def getcrop_details(request) :
     custom_user = CustomUser.objects.get(user=request.user)
     crop = request.GET.get('crop')
 
