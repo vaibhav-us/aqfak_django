@@ -17,7 +17,7 @@ def signup(request):
     crops = request.data['crops']
     user = User.objects.create(username=user_info["userId"])
     user.save()
-    login(request,user)#new addition
+    login(request,user)
     customuser = CustomUser.objects.create(user= user , profilePhoto=user_info["photo"])
     customuser.save()
     for crop in crops:
@@ -28,7 +28,7 @@ def signup(request):
 
 
 @api_view(['POST'])
-def authen(request):
+def signin(request):
 
     user_id = request.data["user_id"]
     
