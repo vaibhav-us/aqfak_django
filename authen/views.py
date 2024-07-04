@@ -17,6 +17,7 @@ def signup(request):
     crops = request.data['crops']
     user = User.objects.create(username=user_info["userId"])
     user.save()
+    login(request,user)#new addition
     customuser = CustomUser.objects.create(user= user , profilePhoto=user_info["photo"])
     customuser.save()
     for crop in crops:
