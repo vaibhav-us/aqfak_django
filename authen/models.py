@@ -2,12 +2,12 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.contrib.auth.models import AbstractUser
 
-class User(AbstractUser):
-    profilePhoto = models.TextField(max_length=200,null = True,blank=True)
-    nickName = models.TextField(max_length=60,null=True,blank=True)
-    place = models.TextField(max_length=200,blank=True,null=True)
+# class User(AbstractUser):
+#     profilePhoto = models.TextField(max_length=200,null = True,blank=True)
+#     nickName = models.TextField(max_length=60,null=True,blank=True)
+#     place = models.TextField(max_length=200,blank=True,null=True)
 
-    
+
 class CustomUser(models.Model):
     user = models.OneToOneField(User,on_delete=models.CASCADE)
     profilePhoto = models.TextField(max_length=200,null = True,blank=True)
