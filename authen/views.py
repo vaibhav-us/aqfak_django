@@ -29,9 +29,7 @@ def signup(request):
 
 @api_view(['POST'])
 def signin(request):
-
     user_id = request.data["user_id"]
-    
     try:
         user = User.objects.get(username = user_id)
     except ObjectDoesNotExist:
@@ -48,7 +46,7 @@ def signout(request):
 
 
 @api_view(['POST'])
-def get_user_details(request):
+def retrieve_update_user(request):
     username = request.data['user_id']
     user = User.objects.get(username=username)
     custom_user=CustomUser.objects.get(user=user)
