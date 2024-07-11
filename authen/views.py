@@ -13,19 +13,21 @@ from django.shortcuts import get_object_or_404
 
 @api_view(['POST'])
 def signup(request):
-    user_info = request.data['userInfo']
-    crops = request.data['crops']
-    user = User.objects.create(username=user_info["userId"])
-    user.save()
-    login(request,user)
-    customuser = CustomUser.objects.create(user= user , profilePhoto=user_info["photo"])
-    customuser.save()
-    for crop in crops:
-        crop_record = Crop.objects.create(user=customuser,name=crop['crop'],stage=crop['stage'],area=crop['area'])
-        crop_record.save()
-    return Response("data created")
-
-
+    try:
+        user_info = request.data['userInfo']
+        crops = request.data['crops']
+        user = User.objects.create(username=user_info["userId"])
+        user.save()
+        login(request,user)
+        customuser = CustomUser.objects.create(user= user , profilePhoto=user_info["photo"])
+        customuser.save()
+        for crop in crops:
+            crop_record = Crop.objects.create(user=customuser,name=crop['crop'],stage=crop['stage'],area=crop['area'])
+            crop_record.save()
+        return Response("data created")
+    except Exception as e:
+        return Response({'detail': f'Something went wrong', 'exception': str(e)})
+    
 
 @api_view(['POST'])
 def signin(request):
@@ -45,21 +47,35 @@ def signout(request):
     return Response("logged out")
 
 
-@api_view(['POST'])
+@api_view(['GET','PUT'])
+@permission_classes([IsAuthenticated])
 def retrieve_update_user(request):
-    username = request.data['user_id']
-    user = User.objects.get(username=username)
-    custom_user=CustomUser.objects.get(user=user)
-    crops = Crop.objects.filter(user=custom_user)
-    user_serializer = CustomUserSerializer(custom_user)
-    crop_serializer = CropSerializer(crops, many=True)
-    return Response({"user":user_serializer.data,"crops":crop_serializer.data})
+    try:
+        custom_user=CustomUser.objects.get(user=request.user)
+        if request.method == 'GET':
+            user_serializer = CustomUserSerializer(custom_user)
+            return Response({"user":user_serializer.data})
+        
+        elif request.method == 'PUT':
+            user_serializer = CustomUserSerializer(data=request.data)
+            if user_serializer.is_valid():
+                user_serializer.save()
+            else:
+                return Response({'detail': user_serializer.errors})
+            return Response({"user":user_serializer.data})
+    except Exception as e:
+        return Response({'detail': f'Something went wrong', 'exception': str(e)})
 
-##new views
+
+
 @api_view(['GET','PUT','DELETE'])
 @permission_classes([IsAuthenticated])
 def getuser_crops(request):
-    custom_user = CustomUser.objects.get(user=request.user)
+    try:
+        custom_user = CustomUser.objects.get(user=request.user)
+    except CustomUser.DoesNotExist:
+        return Response("Model Does Not Exists")
+    
     if request.method == "GET":
         crops = Crop.objects.filter(user=custom_user)
         cropSerializer = CropSerializer(crops, many=True)
@@ -70,14 +86,13 @@ def getuser_crops(request):
             if sensor_data_instance:
                 condition = CropSensorDataSerializer(sensor_data_instance).data['condition']
             else:
-    # Handle the case where no data is found
                 condition = None
-
             crop['condition'] = condition
-        
             cropData.append(capitalizeDict(crop))
         return Response(cropData)
+    
     elif request.method =="PUT":
+
         crop_id = request.data['id']
         try:
             crop = Crop.objects.get(id=crop_id)
@@ -93,7 +108,7 @@ def getuser_crops(request):
             crop_serializer.save()
             return Response(crop_serializer.data)
         else:
-            return Response("error")
+            return Response({'detail': crop_serializer.errors})
     
     elif request.method =="DELETE":
         crop_id = request.data['id']
@@ -105,9 +120,6 @@ def getuser_crops(request):
             crop.delete()
             return Response('deleted')
         
-
-
-
 
 
 
