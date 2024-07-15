@@ -16,7 +16,7 @@ def signup(request):
     try:
         user_info = request.data['userInfo']
         crops = request.data['crops']
-        user = User.objects.create(username=user_info["userId"].split('@')[0])
+        user = User.objects.create(username=user_info["userId"])
         user.save()
         login(request,user)
         customuser = CustomUser.objects.create(user= user ,email=user_info["userId"],name=user_info["name"], profilePhoto=user_info["photo"])
