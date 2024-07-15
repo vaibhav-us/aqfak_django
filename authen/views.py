@@ -16,10 +16,10 @@ def signup(request):
     try:
         user_info = request.data['userInfo']
         crops = request.data['crops']
-        user = User.objects.create(username=user_info["userId"])
+        user = User.objects.create(username=user_info["userId"].split('@')[0])
         user.save()
         login(request,user)
-        customuser = CustomUser.objects.create(user= user , profilePhoto=user_info["photo"])
+        customuser = CustomUser.objects.create(user= user ,email=user_info["userId"], profilePhoto=user_info["photo"])
         customuser.save()
         for crop in crops:
             crop_record = Crop.objects.create(user=customuser,name=crop['crop'],stage=crop['stage'],area=crop['area'])
@@ -57,7 +57,7 @@ def retrieve_update_user(request):
             return Response({"user":user_serializer.data})
         
         elif request.method == 'PUT':
-            user_serializer = CustomUserSerializer(data=request.data)
+            user_serializer = CustomUserSerializer(data=request.data,partial=True)
             if user_serializer.is_valid():
                 user_serializer.save()
             else:
