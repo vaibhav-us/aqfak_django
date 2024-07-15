@@ -7,7 +7,7 @@ class CustomUser(models.Model):
     user = models.OneToOneField(User,on_delete=models.CASCADE)
     email = models.TextField(max_length=60,null=True,blank=True)
     profilePhoto = models.TextField(max_length=200,null = True,blank=True)
-    nickName = models.TextField(max_length=60,null=True,blank=True)
+    name = models.TextField(max_length=60,null=True,blank=True)
     place = models.TextField(max_length=200,default="kozhikode")
 
     def __str__(self):

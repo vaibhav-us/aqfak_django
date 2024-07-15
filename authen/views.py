@@ -19,7 +19,7 @@ def signup(request):
         user = User.objects.create(username=user_info["userId"].split('@')[0])
         user.save()
         login(request,user)
-        customuser = CustomUser.objects.create(user= user ,email=user_info["userId"], profilePhoto=user_info["photo"])
+        customuser = CustomUser.objects.create(user= user ,email=user_info["userId"],name=user_info["name"], profilePhoto=user_info["photo"])
         customuser.save()
         for crop in crops:
             crop_record = Crop.objects.create(user=customuser,name=crop['crop'],stage=crop['stage'],area=crop['area'])
