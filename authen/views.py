@@ -8,6 +8,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth import login,logout,authenticate
 from .utility import capitalizeDict
 from django.shortcuts import get_object_or_404
+from rest_framework.authtoken.models import Token
 
 
 
@@ -18,13 +19,13 @@ def signup(request):
         crops = request.data['crops']
         user = User.objects.create(username=user_info["userId"])
         user.save()
-        login(request,user)
+        token,created = Token.objects.get_or_create(user=user)
         customuser = CustomUser.objects.create(user= user ,email=user_info["userId"],name=user_info["nickname"], profilePhoto=user_info["photo"])
         customuser.save()
         for crop in crops:
             crop_record = Crop.objects.create(user=customuser,name=crop['crop'],stage=crop['stage'],area=crop['area'])
             crop_record.save()
-        return Response("data created")
+        return Response({'data': CustomUserSerializer.data, 'token': token.key })
     except Exception as e:
         return Response({'detail': f'Something went wrong', 'exception': str(e)})
     
@@ -38,13 +39,16 @@ def signin(request):
         user = None
         return Response("false")
     if user:
-        login(request,user)
-        return Response("true")
+        token, created = Token.objects.get_or_create(user=user)
+        return Response({'data': 'true', 'token': token.key })
 
 @api_view(['GET'])
 def signout(request):
-    logout(request)
-    return Response("logged out")
+    try:
+        request.user.auth_token.delete()
+        return Response({'detail':'Successfully logged out'}, status=status.HTTP_200_OK)
+    except Exception as e :
+        return Response({'detail': f'Something went wrong'})
 
 
 @api_view(['GET','PUT'])
