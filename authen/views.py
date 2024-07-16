@@ -5,9 +5,9 @@ from django.contrib.auth.models import User
 from .models import CustomUser,Crop, CropSensorData, CropSchedule
 from .serializers import CustomUserSerializer,CropSerializer,CropSensorDataSerializer,CropScheduleSerializer
 from django.core.exceptions import ObjectDoesNotExist
-from django.contrib.auth import login,logout,authenticate
+
 from .utility import capitalizeDict
-from django.shortcuts import get_object_or_404
+
 from rest_framework.authtoken.models import Token
 
 
@@ -32,21 +32,23 @@ def signup(request):
 
 @api_view(['POST'])
 def signin(request):
-    user_id = request.data["user_id"]
+    user_id = request.data.get("user_id")
     try:
         user = User.objects.get(username = user_id)
     except ObjectDoesNotExist:
         user = None
         return Response("false")
     if user:
+        custom_user = CustomUser.objects.get(user=user)
+        custom_user_serializer = CustomUserSerializer(custom_user)
         token, created = Token.objects.get_or_create(user=user)
-        return Response({'data': 'true', 'token': token.key })
+        return Response({'msg':'true','data': custom_user_serializer.data, 'token': token.key })
 
 @api_view(['GET'])
 def signout(request):
     try:
         request.user.auth_token.delete()
-        return Response({'detail':'Successfully logged out'}, status=status.HTTP_200_OK)
+        return Response({'detail':'Successfully logged out'})
     except Exception as e :
         return Response({'detail': f'Something went wrong'})
 

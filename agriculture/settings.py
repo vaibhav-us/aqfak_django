@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     'authen',
     'corsheaders',
     'rest_framework',
+    'rest_framework.authtoken',
 ]
 
 
@@ -90,11 +91,7 @@ TEMPLATES = [
         },
     },
 ]
-REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.TokenAuthentication',  # Add this line
-    ],
-}
+
 
 WSGI_APPLICATION = 'agriculture.wsgi.application'
 
@@ -155,4 +152,13 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+
+# Configuring token authentication 
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.TokenAuthentication',
+    ),
+}
 
