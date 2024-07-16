@@ -22,10 +22,11 @@ def signup(request):
         token,created = Token.objects.get_or_create(user=user)
         customuser = CustomUser.objects.create(user= user ,email=user_info["userId"],name=user_info["nickname"], profilePhoto=user_info["photo"])
         customuser.save()
+        custom_user_serializer = CustomUserSerializer(customuser)
         for crop in crops:
             crop_record = Crop.objects.create(user=customuser,name=crop['crop'],stage=crop['stage'],area=crop['area'])
             crop_record.save()
-        return Response({'data': CustomUserSerializer.data, 'token': token.key })
+        return Response({'data': custom_user_serializer.data, 'token': token.key })
     except Exception as e:
         return Response({'detail': f'Something went wrong', 'exception': str(e)})
     
