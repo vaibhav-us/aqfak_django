@@ -16,19 +16,50 @@ from rest_framework.authtoken.models import Token
 def signup(request):
     try:
         user_info = request.data['userInfo']
-        crops = request.data['crops']
+        
         user = User.objects.create(username=user_info["userId"])
         user.save()
         token,created = Token.objects.get_or_create(user=user)
         customuser = CustomUser.objects.create(user= user ,email=user_info["userId"],name=user_info["nickname"], profilePhoto=user_info["photo"])
         customuser.save()
         custom_user_serializer = CustomUserSerializer(customuser)
-        for crop in crops:
-            crop_record = Crop.objects.create(user=customuser,name=crop['crop'],stage=crop['stage'],area=crop['area'])
-            crop_record.save()
+        
         return Response({'data': custom_user_serializer.data, 'token': token.key })
     except Exception as e:
         return Response({'detail': f'Something went wrong', 'exception': str(e)})
+    
+@api_view(['GET','POST'])
+# @permission_classes([IsAuthenticated])
+def list_create_crop(request):
+    try:
+        user= User.objects.get(username='vus09003@gmail.com')
+        custom_user = CustomUser.objects.get(user=user)
+    except CustomUser.DoesNotExist:
+        return Response("Model Does Not Exists")
+    
+    if request.method == "GET":
+        crops = Crop.objects.filter(user=custom_user)
+        cropSerializer = CropSerializer(crops, many=True)
+        cropData = []
+        for crop in cropSerializer.data:
+            cropInstanceId = crop['id'] # Get Crop instance by ID
+            crop_instance = Crop.objects.get(id=cropInstanceId)
+            sensor_data_instance = CropSensorData.objects.filter(crop=crop_instance).first()
+            if sensor_data_instance:
+                condition = CropSensorDataSerializer(sensor_data_instance).data['condition']
+            else:
+                condition = None
+            crop['condition'] = condition
+            cropData.append(capitalizeDict(crop))
+        return Response(cropData)
+    
+    elif request.method == 'POST':
+        crops = request.data['crops']
+        for crop in crops:
+            crop_record = Crop.objects.create(user=custom_user,name=crop['crop'],stage=crop['stage'],area=crop['area'])
+            crop_record.save()
+            crop_serializer = CropSerializer(crop_record)
+            return Response({'data':crop_serializer.data})
     
 
 @api_view(['POST'])
@@ -115,30 +146,8 @@ def retreive_update_delete_crop(request,id):
             return Response('deleted')
 
 
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def getuser_crops(request):
-    try:
-        # user= User.objects.get(username='vus09003@gmail.com')
-        custom_user = CustomUser.objects.get(user=request.user)
-    except CustomUser.DoesNotExist:
-        return Response("Model Does Not Exists")
-    
-    if request.method == "GET":
-        crops = Crop.objects.filter(user=custom_user)
-        cropSerializer = CropSerializer(crops, many=True)
-        cropData = []
-        for crop in cropSerializer.data:
-            cropInstanceId = crop['id'] # Get Crop instance by ID
-            crop_instance = Crop.objects.get(id=cropInstanceId)
-            sensor_data_instance = CropSensorData.objects.filter(crop=crop_instance).first()
-            if sensor_data_instance:
-                condition = CropSensorDataSerializer(sensor_data_instance).data['condition']
-            else:
-                condition = None
-            crop['condition'] = condition
-            cropData.append(capitalizeDict(crop))
-        return Response(cropData)
+
+
         
 
 
