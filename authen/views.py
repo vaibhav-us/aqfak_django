@@ -20,7 +20,7 @@ def signup(request):
         user = User.objects.create(username=user_info["userId"])
         user.save()
         token,created = Token.objects.get_or_create(user=user)
-        customuser = CustomUser.objects.create(user= user ,email=user_info["userId"],name=user_info["nickname"], profilePhoto=user_info["photo"])
+        customuser = CustomUser.objects.create(user= user ,email=user_info["userId"],name=user_info["nickname"], profilePhoto=user_info["photo"],place=user_info["place"])
         customuser.save()
         custom_user_serializer = CustomUserSerializer(customuser)
         
@@ -29,11 +29,11 @@ def signup(request):
         return Response({'detail': f'Something went wrong', 'exception': str(e)})
     
 @api_view(['GET','POST'])
-# @permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated])
 def list_create_crop(request):
     try:
-        user= User.objects.get(username='vus09003@gmail.com')
-        custom_user = CustomUser.objects.get(user=user)
+        # user= User.objects.get(username='vus09003@gmail.com')
+        custom_user = CustomUser.objects.get(user=request.user)
     except CustomUser.DoesNotExist:
         return Response("Model Does Not Exists")
     
@@ -59,7 +59,7 @@ def list_create_crop(request):
             crop_record = Crop.objects.create(user=custom_user,name=crop['crop'],stage=crop['stage'],area=crop['area'])
             crop_record.save()
             crop_serializer = CropSerializer(crop_record)
-            return Response({'data':crop_serializer.data})
+            return Response({"data":"crops created"})
     
 
 @api_view(['POST'])

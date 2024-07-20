@@ -8,7 +8,7 @@ class CustomUser(models.Model):
     email = models.TextField(max_length=60,null=True,blank=True)
     profilePhoto = models.TextField(max_length=200,null = True,blank=True)
     name = models.TextField(max_length=60,null=True,blank=True)
-    place = models.TextField(max_length=200,default="kozhikode")
+    place = models.TextField(max_length=200,null=True,blank=True)
 
     def __str__(self):
         return self.user.username
